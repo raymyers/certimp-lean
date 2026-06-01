@@ -1,6 +1,7 @@
 import SoftwareFoundations2.StackMachine.Compile
 import SoftwareFoundations2.StackMachine.Lemmas
 import SoftwareFoundations2.Eval.Eval
+import SoftwareFoundations2.Transformation.Exercises
 
 set_option linter.style.longLine false
 attribute [local simp] Except.instMonad
@@ -427,3 +428,10 @@ theorem Com.compileCorrect (pgm σ σ' stack) (h : σ =[pgm]=> σ') :
   · apply compileCorrectAux2
     assumption
   · simp only [isFinal]
+
+theorem Com.compileOptimizedCorrect (pgm σ σ' stack) (h : σ =[pgm]=> σ') :
+  ∃ fuel : ℕ,
+    execute fuel ⟨pgm.compileOptimized, stack, σ, 0⟩ = .ok ⟨pgm.compileOptimized, stack, σ', pgm.compileOptimized.length⟩ := by
+  apply Com.compileCorrect
+  rw [←fold_constants_com_sound]
+  exact h

@@ -1,4 +1,5 @@
 import SoftwareFoundations2.StackMachine.Semantics
+import SoftwareFoundations2.Transformation.ConstantFolding
 
 open Instruction AExp BExp
 
@@ -135,4 +136,15 @@ def Com.compile (com : Com) := com.compileOffset 0 ++ [.STOP]
   }⟩.compile,
   pc    := 0,
   mem   := [ "x" ↦ 161 ],
+})
+
+def Com.compileOptimized (com : Com) := com.fold_constants.compile
+
+#eval (execute! 1000 {
+  stack     := [],
+  code  := ⟨{
+    x = 1 + 100 * 2;
+  }⟩.compileOptimized,
+  pc    := 0,
+  mem   := State.init,
 })
