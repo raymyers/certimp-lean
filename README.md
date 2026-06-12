@@ -31,6 +31,10 @@ Before you start, make sure you have [Lean installed](https://lean-lang.org/inst
 2. From your cloned directory, run `lake exe cache get`. This will fetch a compressed version of the `Mathlib` library, which would normally be huge.
 3. Run `lake build`.
 
+#### With Nix
+
+If you use [Nix](https://nixos.org/) (with flakes enabled), you don't need to install Lean yourself. Run `nix develop` to enter a dev shell that provides `elan` (which installs the toolchain pinned in `lean-toolchain` and bundles `lake`). Then run `lake exe cache get` and `lake build` as above.
+
 ### Acknowledgments
 
 Our semantics preservation proof was initially modelled following [the one developed](https://perry.alexander.name/eecs755//blog/2025/11/16/Imp-Compiler.html) by [@palexand](https://github.com/palexand) and his students for the EECS 755 course, which only covers arithmetic and boolean expressions. For the semantics of the ISA, we took inspiration from [@NethermindEth](https://github.com/NethermindEth)'s formal model of the [Ethereum Virtual Machine in Lean](https://github.com/NethermindEth/EVMYulLean).
