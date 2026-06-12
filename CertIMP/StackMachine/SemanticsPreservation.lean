@@ -6,6 +6,7 @@ import CertIMP.Transformation.Exercises
 set_option linter.style.longLine false
 attribute [local simp] Except.instMonad
 attribute [local simp] Except.bind
+attribute [local simp] Bind.bind
 
 open Instruction AExp BExp
 
@@ -125,7 +126,7 @@ lemma BExp.compileCorrectAux {pre suf stack mem} (b : BExp) :
         · rw [←List.append_assoc]
           apply AExp.compileCorrectAux a2
         · apply Reachable.trans (Reachable.step rfl)
-          simp only [step, Except.instMonad, Except.bind, fetchInstr, List.append_assoc, List.length_append,
+          simp only [step, Except.bind, Bind.bind, fetchInstr, List.append_assoc, List.length_append,
             Nat.le_add_right, List.getElem_append_right, Nat.add_sub_cancel_left, Nat.le_refl,
             Nat.sub_self, replaceStackAndIncrPC, incrPC, stackPeek2, beq_iff_eq]
           by_cases h : AExp.eval mem a1 = AExp.eval mem a2
@@ -159,7 +160,7 @@ lemma BExp.compileCorrectAux {pre suf stack mem} (b : BExp) :
         · apply Reachable.trans
           · apply Reachable.step
             rfl
-          · simp only [step, Except.instMonad, Except.bind, fetchInstr, List.append_assoc, List.length_append,
+          · simp only [step, Except.bind, Bind.bind, fetchInstr, List.append_assoc, List.length_append,
               Nat.le_add_right, List.getElem_append_right, Nat.add_sub_cancel_left, Nat.le_refl,
               Nat.sub_self, replaceStackAndIncrPC, incrPC, stackPeek2, beq_iff_eq]
             by_cases h : AExp.eval mem a1 ≤ AExp.eval mem a2
@@ -181,7 +182,7 @@ lemma BExp.compileCorrectAux {pre suf stack mem} (b : BExp) :
         apply Reachable.trans
         · apply ih
         · apply Reachable.step
-          simp [step, fetchInstr, replaceStackAndIncrPC, incrPC, stackPeek2, stackPeek1]
+          simp [step, fetchInstr, replaceStackAndIncrPC, incrPC, stackPeek1]
           by_cases h : eval mem b1 = true <;> simp [h] <;> omega
     | BAnd b1 b2 ih1 ih2 =>
         simp only [compile, List.append_assoc, eval, List.length_append]
@@ -209,7 +210,7 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
       simp only [Com.compileOffset, List.append_assoc, List.cons_append, List.nil_append,
         List.length_append, List.length_cons, List.length_nil, Nat.zero_add]
       apply Reachable.step
-      simp [step, fetchInstr, Except.instMonad, Except.bind, incrPC]
+      simp [step, fetchInstr, Except.bind, incrPC]
   | EAsgn h1 h2 =>
       subst h1
       subst h2
@@ -218,7 +219,7 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
       apply Reachable.trans
       · apply AExp.compileCorrectAux
       · apply Reachable.step
-        simp [step, fetchInstr, Except.instMonad, Except.bind, stackPeek1, replaceMemStackAndIncrPC, replaceStackAndIncrPC, incrPC]
+        simp [step, fetchInstr, Except.bind, stackPeek1, replaceMemStackAndIncrPC, replaceStackAndIncrPC, incrPC]
         rfl
   | ESeq c1 c2 ih1 ih2 =>
       simp only [Com.compileOffset, List.append_assoc, List.length_append]
@@ -236,17 +237,17 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
       · apply BExp.compileCorrectAux
       · apply Reachable.trans
         · apply Reachable.step
-          simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC]
+          simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC]
           rfl
         · apply Reachable.trans
           · apply Reachable.step
-            simp only [step, Except.instMonad, Except.bind, fetchInstr, Nat.add_assoc,
+            simp only [step, fetchInstr, Nat.add_assoc,
               List.length_append, List.length_cons, Nat.reduceAdd, Nat.add_lt_add_iff_left,
               Nat.le_add_right, List.getElem_append_right, Nat.add_sub_cancel_left,
               List.getElem_cons_succ, List.getElem_cons_zero, dite_eq_ite, replaceStackAndIncrPC,
               incrPC, beq_iff_eq, gt_iff_lt]
             simp only [← Nat.add_assoc, Nat.lt_add_left_iff_pos, Nat.zero_lt_succ, ↓reduceIte,
-              stackPeek2, htrue, Nat.lt_add_one]
+              stackPeek2, htrue]
             rfl
           · apply Reachable.trans
             · specialize ih1 (pre ++ b.compile ++ [PUSH (pre.length + b.compile.length + 4),
@@ -258,7 +259,7 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
               simp only [Nat.add_assoc, Nat.reduceAdd]
               apply Reachable.trans
               · apply Reachable.step
-                simp only [step, Except.instMonad, Except.bind, fetchInstr, List.length_append,
+                simp only [step, fetchInstr, List.length_append,
                   List.length_cons, Nat.add_assoc, Nat.reduceAdd, Nat.add_lt_add_iff_left,
                   Nat.lt_add_left_iff_pos, Nat.zero_lt_succ, ↓reduceDIte, Nat.le_add_right,
                   List.getElem_append_right, Nat.add_sub_cancel_left, List.getElem_cons_succ,
@@ -267,7 +268,7 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
                 rfl
               · apply Reachable.trans
                 · apply Reachable.step
-                  simp [step, fetchInstr, Except.instMonad, Except.bind, Nat.add_assoc, stackPeek1]
+                  simp [step, fetchInstr, Except.bind, Nat.add_assoc, stackPeek1]
                   rfl
                 · simp only [Com.compileOffset, Nat.add_assoc, List.append_assoc, List.cons_append,
                   List.nil_append, List.length_append, List.length_cons, List.length_nil,
@@ -280,20 +281,20 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
         apply BExp.compileCorrectAux
       · apply Reachable.trans
         · apply Reachable.step
-          simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC]
+          simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC]
           rfl
         · apply Reachable.trans
           · apply Reachable.step
-            simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
+            simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
             simp [←Nat.add_assoc, hfalse]
             rfl
           · apply Reachable.trans
             · apply Reachable.step
-              simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
+              simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
               simp [←Nat.add_assoc]
               rfl
             · apply Reachable.step
-              simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
+              simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
               simp [←Nat.add_assoc, Com.compileOffset, stackPeek1]
   | EIfTrue htrue h ih =>
       rename_i σ c₁ σ' b c₂
@@ -304,11 +305,11 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
       · apply BExp.compileCorrectAux
       · apply Reachable.trans
         · apply Reachable.step
-          simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC]
+          simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC]
           rfl
         · apply Reachable.trans
           · apply Reachable.step
-            simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
+            simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
             simp [←Nat.add_assoc, htrue]
             rfl
           · simp only [Nat.add_assoc, stackPeek2]
@@ -319,10 +320,10 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
             · clear ih
               apply Reachable.trans
               · apply Reachable.step
-                simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC]
+                simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC]
                 rfl
               · apply Reachable.step
-                simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
+                simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
                 simp [←Nat.add_assoc, stackPeek1]
   | EIfFalse hfalse h ih =>
       rename_i σ c₂ σ' b c₁
@@ -333,21 +334,21 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
       · apply BExp.compileCorrectAux
       · apply Reachable.trans
         · apply Reachable.step
-          simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC]
+          simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC]
           rfl
         · apply Reachable.trans
           · apply Reachable.step
-            simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
+            simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC, Nat.add_assoc]
             simp [←Nat.add_assoc, hfalse]
             rfl
           · simp only [Nat.add_assoc]
             apply Reachable.trans
             · apply Reachable.step
-              simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC]
+              simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC]
               rfl
             · apply Reachable.trans
               · apply Reachable.step
-                simp [step, fetchInstr, Except.instMonad, Except.bind, Nat.add_assoc]
+                simp [step, fetchInstr, Except.bind, Nat.add_assoc]
                 simp [←Nat.add_assoc]
                 rfl
               · apply Reachable.trans
@@ -370,10 +371,10 @@ lemma Com.compileCorrectAux (pgm σ σ' stack pre suf) (h : σ =[pgm]=> σ') :
                 · clear ih
                   apply Reachable.trans
                   · apply Reachable.step
-                    simp [step, fetchInstr, Except.instMonad, Except.bind, replaceStackAndIncrPC, incrPC]
+                    simp [step, fetchInstr, Except.bind, replaceStackAndIncrPC, incrPC]
                     rfl
                   · apply Reachable.step
-                    simp only [step, Except.instMonad, Except.bind, fetchInstr, Nat.add_assoc,
+                    simp only [step, fetchInstr, Nat.add_assoc,
                       Nat.reduceAdd, List.length_append, List.length_cons, Nat.add_lt_add_iff_left,
                       Nat.lt_add_left_iff_pos, Nat.zero_lt_succ, ↓reduceDIte, Nat.le_add_right,
                       List.getElem_append_right, Nat.add_sub_cancel_left, beq_iff_eq, gt_iff_lt]
@@ -389,9 +390,9 @@ lemma Com.compileCorrectAux2 (pgm σ σ' stack) (h : σ =[pgm]=> σ') :
     simp only [List.length_nil, List.nil_append] at hx
     apply Reachable.trans hx
     apply Reachable.step
-    simp only [step, Except.instMonad, Except.bind, fetchInstr, List.length_append, List.length_cons, List.length_nil,
+    simp only [step, Except.bind, Bind.bind, fetchInstr, List.length_append, List.length_cons, List.length_nil,
     Nat.zero_add, Nat.lt_add_one, ↓reduceDIte, Nat.le_refl, List.getElem_append_right, Nat.sub_self,
-    List.getElem_cons_zero, replaceStackAndIncrPC, incrPC, stackPeek1, stackPeek2, beq_iff_eq, gt_iff_lt]
+    List.getElem_cons_zero]
 
 /- With these lemmas on hand, proving correctness of compilation for {`AExp`, `BExp`, whole programs} is an easy consequence.
   I kept the proofs in full, they do not need to be filled out.

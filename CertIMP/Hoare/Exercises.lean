@@ -29,7 +29,7 @@ def hoare_asgn_wrong : ∃ a,
   exists aexp⟨{x+1}⟩
   intro h
   unfold Valid at h
-  simp only [Assertion.top, Assertion.eq, instEvalVar, ValThunk.ofVar, instEvalAExp,
+  simp only [Assertion.top, Assertion.eq, Eval.eval, ValThunk.ofVar,
     ValThunk.ofAExp, AExp.eval, Nat.left_eq_add, one_ne_zero, imp_false, not_true_eq_false] at h
   specialize h (State.init) (State.init["x" ↦ 1])
   apply h
