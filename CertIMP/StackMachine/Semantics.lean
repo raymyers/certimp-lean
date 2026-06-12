@@ -2,6 +2,11 @@ import CertIMP.StackMachine.MachineState
 
 open Instruction AExp BExp
 
+/- Simp set for the stack-machine execution primitives (`step`, `fetchInstr`,
+   `stackPeek*`, the `replace*`/`incrPC` updates). Registered here so that files
+   downstream can tag the primitives and write `simp [machine, …]`. -/
+register_simp_attr machine
+
 abbrev ExecutionState := Except ExecutionException MachineState
 
 def stackPeek1 (μ : MachineState) : Except ExecutionException (Value × Stack) :=
