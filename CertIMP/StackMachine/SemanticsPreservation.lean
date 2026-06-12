@@ -6,6 +6,7 @@ import CertIMP.Transformation.Exercises
 set_option linter.style.longLine false
 attribute [local simp] Except.instMonad
 attribute [local simp] Except.bind
+attribute [local simp] Bind.bind
 
 open Instruction AExp BExp
 
@@ -125,7 +126,7 @@ lemma BExp.compileCorrectAux {pre suf stack mem} (b : BExp) :
         · rw [←List.append_assoc]
           apply AExp.compileCorrectAux a2
         · apply Reachable.trans (Reachable.step rfl)
-          simp only [step, Except.instMonad, Except.bind, fetchInstr, List.append_assoc, List.length_append,
+          simp only [step, Except.instMonad, Except.bind, Bind.bind, fetchInstr, List.append_assoc, List.length_append,
             Nat.le_add_right, List.getElem_append_right, Nat.add_sub_cancel_left, Nat.le_refl,
             Nat.sub_self, replaceStackAndIncrPC, incrPC, stackPeek2, beq_iff_eq]
           by_cases h : AExp.eval mem a1 = AExp.eval mem a2
@@ -159,7 +160,7 @@ lemma BExp.compileCorrectAux {pre suf stack mem} (b : BExp) :
         · apply Reachable.trans
           · apply Reachable.step
             rfl
-          · simp only [step, Except.instMonad, Except.bind, fetchInstr, List.append_assoc, List.length_append,
+          · simp only [step, Except.instMonad, Except.bind, Bind.bind, fetchInstr, List.append_assoc, List.length_append,
               Nat.le_add_right, List.getElem_append_right, Nat.add_sub_cancel_left, Nat.le_refl,
               Nat.sub_self, replaceStackAndIncrPC, incrPC, stackPeek2, beq_iff_eq]
             by_cases h : AExp.eval mem a1 ≤ AExp.eval mem a2
@@ -389,7 +390,7 @@ lemma Com.compileCorrectAux2 (pgm σ σ' stack) (h : σ =[pgm]=> σ') :
     simp only [List.length_nil, List.nil_append] at hx
     apply Reachable.trans hx
     apply Reachable.step
-    simp only [step, Except.instMonad, Except.bind, fetchInstr, List.length_append, List.length_cons, List.length_nil,
+    simp only [step, Except.instMonad, Except.bind, Bind.bind, fetchInstr, List.length_append, List.length_cons, List.length_nil,
     Nat.zero_add, Nat.lt_add_one, ↓reduceDIte, Nat.le_refl, List.getElem_append_right, Nat.sub_self,
     List.getElem_cons_zero, replaceStackAndIncrPC, incrPC, stackPeek1, stackPeek2, beq_iff_eq, gt_iff_lt]
 
